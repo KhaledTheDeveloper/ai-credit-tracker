@@ -1,0 +1,51 @@
+name: 🖥️ Platform Port
+description: Discuss or propose a Windows or Linux native UI
+title: "[Platform Port]: "
+labels: ["platform-port", "help wanted"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        We're actively looking for contributors to build native system tray apps for Windows and Linux!
+        
+        The Node.js engine (`engine/index.js`) already works cross-platform. See [ARCHITECTURE.md](../../ARCHITECTURE.md) for the engine JSON contract.
+
+  - type: dropdown
+    id: platform
+    attributes:
+      label: Target Platform
+      options:
+        - Windows
+        - Linux
+        - Both
+    validations:
+      required: true
+
+  - type: dropdown
+    id: tech-stack
+    attributes:
+      label: Proposed Tech Stack
+      options:
+        - "C# WinUI 3 (.NET 8)"
+        - "C# WPF (.NET 8)"
+        - "Tauri (Rust + HTML)"
+        - "GTK4 (Python)"
+        - "GTK4 (Rust)"
+        - "Electron"
+        - "Other (describe below)"
+    validations:
+      required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Description
+      description: Describe your approach, experience with the platform, and any questions.
+    validations:
+      required: true
+
+  - type: textarea
+    id: mockup
+    attributes:
+      label: UI Mockup / Design Ideas
+      description: Optional sketches or screenshots of what the UI might look like.

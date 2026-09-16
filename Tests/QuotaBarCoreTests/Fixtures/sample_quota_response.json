@@ -1,0 +1,44 @@
+[
+  {
+    "email": "user1@gmail.com",
+    "pools": [
+      {
+        "displayName": "Gemini Models",
+        "buckets": [
+          {"window": "weekly", "remainingFraction": 1.0, "resetTime": "2026-09-23T11:45:00Z"},
+          {"window": "5h", "remainingFraction": 1.0, "resetTime": "2026-09-16T16:30:00Z"}
+        ]
+      },
+      {
+        "displayName": "Claude and GPT models",
+        "buckets": [
+          {"window": "weekly", "remainingFraction": 0.0, "resetTime": "2026-09-19T18:30:00Z"},
+          {"window": "5h", "remainingFraction": 0.12, "resetTime": "2026-09-16T14:15:00Z"}
+        ]
+      }
+    ],
+    "fetchedAt": "2026-09-16T12:00:00Z",
+    "isStale": false
+  },
+  {
+    "email": "user2@gmail.com",
+    "pools": [
+      {
+        "displayName": "Gemini Models",
+        "buckets": [
+          {"window": "weekly", "remainingFraction": 0.65, "resetTime": "2026-09-21T00:00:00Z"},
+          {"window": "5h", "remainingFraction": 0.82, "resetTime": "2026-09-16T14:45:00Z"}
+        ]
+      },
+      {
+        "displayName": "Claude and GPT models",
+        "buckets": [
+          {"window": "weekly", "remainingFraction": 0.42, "resetTime": "2026-09-23T11:45:00Z"},
+          {"window": "5h", "remainingFraction": 0.15, "resetTime": "2026-09-16T14:15:00Z"}
+        ]
+      }
+    ],
+    "fetchedAt": "2026-09-16T12:00:00Z",
+    "isStale": false
+  }
+]

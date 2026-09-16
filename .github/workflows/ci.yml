@@ -1,0 +1,30 @@
+name: CI
+
+on:
+  push:
+    branches: [ main, 'feat/**' ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build-and-test:
+    name: Build & Test (macOS)
+    runs-on: macos-14
+    
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      - name: Verify Node.js engine syntax
+        run: node -c engine/index.js
+
+      - name: Build
+        run: swift build
+
+      - name: Run Tests
+        run: swift test

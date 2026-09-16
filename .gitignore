@@ -1,0 +1,10 @@
+# .gitignore
+.DS_Store
+.build/
+.swiftpm/
+*.xcodeproj/xcuserdata/
+DerivedData/
+*.token
+*.env
+Config/local.json
+node_modules/
