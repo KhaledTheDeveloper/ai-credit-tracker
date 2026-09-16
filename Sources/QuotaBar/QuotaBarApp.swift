@@ -20,7 +20,18 @@ struct QuotaBarApp: App {
         let targetEngineDir = appSupportDir.appendingPathComponent("engine")
         let targetEngineScript = targetEngineDir.appendingPathComponent("index.js")
 
-        // 1. If running from repository or local directory has engine/index.js, ensure AppSupport is synced
+        // 1. Check inside the .app bundle (for distributed builds)
+        if let bundledEngine = Bundle.main.path(forResource: "index", ofType: "js", inDirectory: "engine") {
+            // Copy bundled engine to App Support so it's always up to date
+            try? fm.createDirectory(at: targetEngineDir, withIntermediateDirectories: true)
+            if fm.fileExists(atPath: targetEngineScript.path) {
+                try? fm.removeItem(at: targetEngineScript)
+            }
+            try? fm.copyItem(atPath: bundledEngine, toPath: targetEngineScript.path)
+            return targetEngineScript.path
+        }
+
+        // 2. If running from repository, sync local engine to App Support
         let localCandidate = URL(fileURLWithPath: fm.currentDirectoryPath).appendingPathComponent("engine/index.js")
         if fm.fileExists(atPath: localCandidate.path) {
             try? fm.createDirectory(at: targetEngineDir, withIntermediateDirectories: true)
@@ -31,7 +42,7 @@ struct QuotaBarApp: App {
             return targetEngineScript.path
         }
 
-        // 2. If App Support copy exists, use it
+        // 3. If App Support copy exists, use it
         if fm.fileExists(atPath: targetEngineScript.path) {
             return targetEngineScript.path
         }

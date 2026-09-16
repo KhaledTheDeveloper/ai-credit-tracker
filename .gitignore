@@ -8,3 +8,4 @@ DerivedData/
 *.env
 Config/local.json
 node_modules/
+dist/
