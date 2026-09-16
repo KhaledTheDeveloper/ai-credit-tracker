@@ -80,15 +80,11 @@ curl -sL https://github.com/KhaledTheDeveloper/ai-credit-tracker/releases/latest
 
 1. Grab the latest `.zip` from [**Releases**](https://github.com/KhaledTheDeveloper/ai-credit-tracker/releases/latest), unzip, and drag **AI Credit Tracker.app** to your Applications folder.
 
-2. **First launch (unsigned build):** the current builds are not notarized, so on first launch macOS shows *"AI Credit Tracker is damaged and can't be opened"* and blocks it.
+2. **First launch (unsigned build):** the current builds are ad-hoc signed (not yet notarized), so on first launch macOS shows *"AI Credit Tracker" Not Opened* and blocks it.
 
-   To open it, run this in Terminal:
+   To open it, go to **System Settings → Privacy & Security** and click **Open Anyway**, then **Open** in the confirmation dialog.
 
-   ```bash
-   xattr -cr "/Applications/AI Credit Tracker.app"
-   ```
-
-   Or go to **System Settings → Privacy & Security** and click **Open Anyway**, then **Open** in the confirmation dialog.
+   Or run `xattr -cr "/Applications/AI Credit Tracker.app"` in Terminal.
 
    <!-- TODO: Add screenshots showing the Gatekeeper warning and Privacy & Security bypass -->
 

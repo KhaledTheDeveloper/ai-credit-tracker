@@ -86,12 +86,17 @@ PLIST
 echo "  ✅ Info.plist written"
 
 # ── Step 4: Create PkgInfo ────────────────────────────────────
-echo "→ Step 4/5: Writing PkgInfo..."
+echo "→ Step 4/6: Writing PkgInfo..."
 echo -n "APPL????" > "$APP_DIR/Contents/PkgInfo"
 echo "  ✅ PkgInfo written"
 
-# ── Step 5: Package as .zip ───────────────────────────────────
-echo "→ Step 5/5: Creating distributable .zip..."
+# ── Step 5: Ad-hoc code sign ──────────────────────────────────
+echo "→ Step 5/6: Ad-hoc code signing..."
+codesign --force --deep -s - "$APP_DIR"
+echo "  ✅ App signed (ad-hoc)"
+
+# ── Step 6: Package as .zip ───────────────────────────────────
+echo "→ Step 6/6: Creating distributable .zip..."
 ZIP_NAME="AI-Credit-Tracker-v${VERSION}-macOS.zip"
 cd "$DIST_DIR"
 rm -f "$ZIP_NAME"
