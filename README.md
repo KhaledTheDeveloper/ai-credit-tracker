@@ -60,61 +60,58 @@ AI Credit Tracker solves this by showing all your accounts at a glance, sorted b
 | Node.js | 18+ |
 | Google Account | With [Google AI Pro](https://ai.google.dev/) subscription |
 
-## Installation
+## Install
 
-### Option A — Download the App (Recommended)
+### Terminal (recommended)
 
-1. **Download** the latest `.zip` from the [Releases page](https://github.com/KhaledTheDeveloper/ai-credit-tracker/releases/latest)
-2. **Unzip** — double-click the downloaded file. You'll see `AI Credit Tracker.app`
-3. **Drag** `AI Credit Tracker.app` into your `/Applications` folder
-4. **First launch** — since this app is not signed with an Apple Developer certificate, macOS will show a security warning:
+The fastest way — downloads, installs, and removes the macOS quarantine flag in one command:
 
-   > ⚠️ **"AI Credit Tracker" can't be opened because Apple cannot check it for malicious software.**
+```bash
+curl -sL https://github.com/KhaledTheDeveloper/ai-credit-tracker/releases/latest/download/AI-Credit-Tracker-v1.0.0-macOS.zip -o /tmp/act.zip \
+  && unzip -o /tmp/act.zip -d /Applications \
+  && xattr -cr "/Applications/AI Credit Tracker.app" \
+  && rm /tmp/act.zip \
+  && open "/Applications/AI Credit Tracker.app"
+```
 
-   **To bypass this (required on first launch only):**
-   - **Method 1:** Right-click (or Control-click) the app → click **"Open"** → click **"Open"** again in the dialog
-   - **Method 2:** Go to **System Settings → Privacy & Security** → scroll down to find the blocked app → click **"Open Anyway"**
+> **Requires:** [Node.js 18+](https://nodejs.org) must be installed on your system.
 
-   After the first launch, macOS will remember your choice and the app will open normally from then on.
+### Direct Download
 
-5. The app appears as a ⚡ icon in your **menu bar** (top-right of your screen). Click it to see your credit cards.
+1. Grab the latest `.zip` from [**Releases**](https://github.com/KhaledTheDeveloper/ai-credit-tracker/releases/latest), unzip, and drag **AI Credit Tracker.app** to your Applications folder.
 
-> **Note:** This app requires [Node.js 18+](https://nodejs.org) to be installed on your system for the quota-fetching engine.
+2. **First launch (unsigned build):** the current builds are not notarized, so on first launch macOS shows *"AI Credit Tracker is damaged and can't be opened"* and blocks it.
 
-### Option B — Build from Source
+   To open it, run this in Terminal:
+
+   ```bash
+   xattr -cr "/Applications/AI Credit Tracker.app"
+   ```
+
+   Or go to **System Settings → Privacy & Security** and click **Open Anyway**, then **Open** in the confirmation dialog.
+
+   <!-- TODO: Add screenshots showing the Gatekeeper warning and Privacy & Security bypass -->
+
+> After the first launch, macOS remembers your choice and the app opens normally from then on.
+
+### Build from Source
 
 If you prefer to compile it yourself (requires Xcode 15+ and Swift 5.9+):
 
 ```bash
-# Clone the repository
 git clone https://github.com/KhaledTheDeveloper/ai-credit-tracker.git
 cd ai-credit-tracker
-
-# Build the .app bundle
 ./scripts/build-app.sh
-
-# Launch it
 open "dist/AI Credit Tracker.app"
-```
-
-Or build and run directly from the terminal:
-
-```bash
-swift build
-.build/debug/QuotaBar &
 ```
 
 ### Adding Your Google Accounts
 
 The app discovers accounts from your local Gemini CLI / Antigravity IDE session automatically. To add additional accounts:
 
-**Browser OAuth (recommended):**
+**Browser OAuth (recommended):** Click the **`+`** button in the menu bar → **"+ Add Account (Browser)"** → sign in with your Google account.
 
-Click the **`+`** button in the menu bar → **"+ Add Account (Browser)"** → sign in with your Google account.
-
-**If you already use Gemini CLI or Antigravity IDE:**
-
-Accounts logged into Gemini CLI or Antigravity IDE are automatically discovered. No extra setup needed.
+**Already use Gemini CLI or Antigravity IDE?** Accounts are automatically discovered — no extra setup needed.
 
 ---
 
