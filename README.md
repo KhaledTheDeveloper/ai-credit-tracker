@@ -82,11 +82,13 @@ curl -sL https://github.com/KhaledTheDeveloper/ai-credit-tracker/releases/latest
 
 2. **First launch (unsigned build):** the current builds are ad-hoc signed (not yet notarized), so on first launch macOS shows *"AI Credit Tracker" Not Opened* and blocks it.
 
-   To open it, go to **System Settings → Privacy & Security** and click **Open Anyway**, then **Open** in the confirmation dialog.
+   To open it, go to **System Settings → Privacy & Security** and click **Open Anyway**, then **Open** in the confirmation dialog. (Or run `xattr -cr "/Applications/AI Credit Tracker.app"` in Terminal.)
 
-   Or run `xattr -cr "/Applications/AI Credit Tracker.app"` in Terminal.
-
-   <!-- TODO: Add screenshots showing the Gatekeeper warning and Privacy & Security bypass -->
+   <p align="center">
+     <img src="assets/gatekeeper-warning.png" alt="Gatekeeper Warning" width="260" />
+     &nbsp;&nbsp;&nbsp;
+     <img src="assets/privacy-security-open-anyway.png" alt="Privacy & Security → Open Anyway" width="520" />
+   </p>
 
 > After the first launch, macOS remembers your choice and the app opens normally from then on.
 
