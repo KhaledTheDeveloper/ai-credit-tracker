@@ -543,7 +543,7 @@ async function handleLogin() {
         client_id: OAUTH_CLIENT_ID,
         redirect_uri: redirectUri,
         response_type: 'code',
-        scope: 'https://www.googleapis.com/auth/cloud-platform https://www.googleapis.com/auth/userinfo.email',
+        scope: 'https://www.googleapis.com/auth/cloud-platform https://www.googleapis.com/auth/userinfo.email https://www.googleapis.com/auth/userinfo.profile https://www.googleapis.com/auth/aicode https://www.googleapis.com/auth/cclog https://www.googleapis.com/auth/experimentsandconfigs',
         access_type: 'offline',
         prompt: 'consent',
         state: state
@@ -578,6 +578,82 @@ async function main() {
   if (args[0] === 'login') {
     const success = await handleLogin();
     process.exit(success ? 0 : 1);
+  }
+
+  if (args[0] === 'switch' && args[1]) {
+    const targetEmail = args[1];
+    const accounts = loadAccounts();
+    const target = accounts.find(a => a.email === targetEmail);
+    
+    if (!target || !target.refreshToken) {
+      console.log(JSON.stringify({ success: false, message: `No refresh token found for ${targetEmail}` }));
+      process.exit(1);
+    }
+
+    // Refresh token and get full response (including id_token)
+    let freshToken = null;
+    let idToken = '';
+    try {
+      const tokenRes = await new Promise((resolve, reject) => {
+        const postData = new URLSearchParams({
+          client_id: OAUTH_CLIENT_ID,
+          client_secret: OAUTH_CLIENT_SECRET,
+          refresh_token: target.refreshToken,
+          grant_type: 'refresh_token'
+        }).toString();
+        const req = https.request(TOKEN_REFRESH_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'Content-Length': Buffer.byteLength(postData) },
+          timeout: 10000
+        }, (res) => {
+          let data = '';
+          res.on('data', chunk => data += chunk);
+          res.on('end', () => {
+            if (res.statusCode >= 200 && res.statusCode < 300) {
+              try { resolve(JSON.parse(data)); } catch (e) { reject(e); }
+            } else {
+              reject(new Error(`Token refresh HTTP ${res.statusCode}: ${data}`));
+            }
+          });
+        });
+        req.on('error', reject);
+        req.on('timeout', () => { req.destroy(); reject(new Error('timeout')); });
+        req.write(postData);
+        req.end();
+      });
+      freshToken = tokenRes.access_token;
+      idToken = tokenRes.id_token || '';
+    } catch (e) {
+      console.log(JSON.stringify({ success: false, message: `Failed to refresh token: ${e.message}` }));
+      process.exit(1);
+    }
+
+    if (!freshToken) {
+      console.log(JSON.stringify({ success: false, message: `Token refresh returned no access token` }));
+      process.exit(1);
+    }
+
+    // Build the jetski token file in Antigravity's expected format
+    const jetskiToken = {
+      token: {
+        access_token: freshToken,
+        token_type: 'Bearer',
+        refresh_token: target.refreshToken,
+        expiry: new Date(Date.now() + 3600 * 1000).toISOString()
+      },
+      auth_method: 'consumer',
+      id_token: idToken
+    };
+
+    const geminiDir = path.join(HOME, '.gemini');
+    const jetskiPath = path.join(geminiDir, 'jetski-standalone-oauth-token');
+    if (!fs.existsSync(geminiDir)) {
+      fs.mkdirSync(geminiDir, { recursive: true });
+    }
+    fs.writeFileSync(jetskiPath, JSON.stringify(jetskiToken, null, 2), { mode: 0o600 });
+
+    console.log(JSON.stringify({ success: true, message: `Switched Antigravity to ${targetEmail}` }));
+    process.exit(0);
   }
 
   // Default to returning quota JSON

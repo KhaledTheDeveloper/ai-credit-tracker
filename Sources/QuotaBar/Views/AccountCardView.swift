@@ -2,12 +2,20 @@
 import SwiftUI
 import QuotaBarCore
 
+private enum SwitchStatus: Equatable {
+    case idle
+    case switching
+    case success
+    case failed(String)
+}
+
 struct AccountCardView: View {
     let rank: Int
     let usage: AccountUsage
     let primaryPool: String
     let isExpanded: Bool
     let onToggle: () -> Void
+    @State private var switchStatus: SwitchStatus = .idle
 
     private var orderedPools: [QuotaPool] {
         QuotaViewModel.orderedPools(for: usage, primaryPool: primaryPool)
@@ -117,6 +125,46 @@ struct AccountCardView: View {
                         Spacer()
                     }
                     .padding(.top, 2)
+
+                    // Switch Antigravity button
+                    Button {
+                        switchStatus = .switching
+                        AccountSwitcher.switchAccount(email: usage.email) { success, message in
+                            switchStatus = success ? .success : .failed(message)
+                            if success {
+                                DispatchQueue.main.asyncAfter(deadline: .now() + 3) {
+                                    switchStatus = .idle
+                                }
+                            }
+                        }
+                    } label: {
+                        HStack(spacing: 6) {
+                            switch switchStatus {
+                            case .idle:
+                                Image(systemName: "arrow.triangle.2.circlepath")
+                                Text("Switch Antigravity to this account")
+                            case .switching:
+                                ProgressView()
+                                    .controlSize(.mini)
+                                Text("Switching…")
+                            case .success:
+                                Image(systemName: "checkmark.circle.fill")
+                                    .foregroundStyle(.green)
+                                Text("Switched!")
+                            case .failed(let msg):
+                                Image(systemName: "xmark.circle.fill")
+                                    .foregroundStyle(.red)
+                                Text(msg)
+                                    .lineLimit(1)
+                            }
+                        }
+                        .font(.caption)
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 6)
+                    }
+                    .buttonStyle(.bordered)
+                    .controlSize(.small)
+                    .disabled(switchStatus == .switching)
                 }
                 .padding(.horizontal, 12)
                 .padding(.vertical, 10)

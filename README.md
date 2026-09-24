@@ -67,7 +67,7 @@ AI Credit Tracker solves this by showing all your accounts at a glance, sorted b
 The fastest way — downloads, installs, and removes the macOS quarantine flag in one command:
 
 ```bash
-curl -sL https://github.com/KhaledTheDeveloper/ai-credit-tracker/releases/latest/download/AI-Credit-Tracker-v1.0.1-macOS.zip -o /tmp/act.zip \
+curl -sL https://github.com/KhaledTheDeveloper/ai-credit-tracker/releases/latest/download/AI-Credit-Tracker-v1.0.2-macOS.zip -o /tmp/act.zip \
   && unzip -o /tmp/act.zip -d /Applications \
   && xattr -cr "/Applications/AI Credit Tracker.app" \
   && rm /tmp/act.zip \
@@ -205,6 +205,11 @@ The engine (`node engine/index.js`) works on all platforms. The menu bar UI is m
 ---
 
 ## Changelog
+
+### v1.0.2 — September 2026
+
+- 🔄 **One-click account switching** — When quota runs out, switch Antigravity's active session to another account directly from the menu bar with a single click
+- 🔑 **Full Antigravity OAuth scopes** — New logins now request the complete Antigravity scope set, so switched accounts work seamlessly with Antigravity IDE and CLI
 
 ### v1.0.1 — September 2026
 
