@@ -595,6 +595,25 @@ async function main() {
     let token = acc.accessToken;
     let data = null;
 
+    // Proactively refresh if token looks expired
+    if (acc.refreshToken) {
+      let needsRefresh = !token;
+      if (!needsRefresh && token) {
+        // Check JWT expiry
+        const payload = decodeJwtPayload(token);
+        if (payload && payload.exp && payload.exp * 1000 < Date.now()) {
+          needsRefresh = true;
+        }
+      }
+      if (needsRefresh) {
+        const freshToken = await refreshAccessToken(acc.refreshToken);
+        if (freshToken) {
+          token = freshToken;
+          acc.accessToken = freshToken;
+        }
+      }
+    }
+
     try {
       if (token) {
         data = await fetchQuotaForToken(token);
@@ -609,12 +628,20 @@ async function main() {
           acc.accessToken = freshToken;
           try {
             data = await fetchQuotaForToken(freshToken);
-            // Optionally persist fresh token back to tokens file
+            // Persist fresh token back to tokens file
             if (acc.tokenPath && fs.existsSync(acc.tokenPath)) {
               try {
                 const stored = JSON.parse(fs.readFileSync(acc.tokenPath, 'utf8'));
                 if (stored[acc.email]) {
+                  // Flat tokens.json format: { "email@gmail.com": { access_token: ... } }
                   stored[acc.email].access_token = freshToken;
+                  stored[acc.email].accessToken = freshToken;
+                  fs.writeFileSync(acc.tokenPath, JSON.stringify(stored, null, 2));
+                } else if (stored.accessToken !== undefined || stored.access_token !== undefined) {
+                  // Per-account tokens.json format: { accessToken: ..., refreshToken: ... }
+                  stored.accessToken = freshToken;
+                  stored.access_token = freshToken;
+                  stored.expiresAt = Date.now() + 3600 * 1000;
                   fs.writeFileSync(acc.tokenPath, JSON.stringify(stored, null, 2));
                 }
               } catch (e) {}
