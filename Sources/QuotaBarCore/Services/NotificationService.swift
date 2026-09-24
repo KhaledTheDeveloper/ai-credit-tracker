@@ -34,31 +34,32 @@ public enum NotificationService {
         for curr in current {
             guard let prev = previous.first(where: { $0.email == curr.email }) else { continue }
 
-            let poolName = settings.primaryPool
-            guard let currPool = curr.pool(named: poolName),
-                  let prevPool = prev.pool(named: poolName) else { continue }
+            for currPool in curr.pools {
+                guard let prevPool = prev.pool(named: currPool.displayName) else { continue }
 
-            let prevFraction = prevPool.fiveHour?.remainingFraction ?? 0
-            let currFraction = currPool.fiveHour?.remainingFraction ?? 0
+                // Use 5-hour window fractions for comparison
+                let prevFraction = prevPool.fiveHour?.remainingFraction ?? 0
+                let currFraction = currPool.fiveHour?.remainingFraction ?? 0
 
-            // Low threshold crossing
-            if prevFraction > threshold && currFraction <= threshold && currFraction > 0 {
-                notifications.append(QuotaNotification(
-                    email: curr.email,
-                    pool: poolName,
-                    kind: .lowThreshold,
-                    message: "\(curr.email): \(poolName) below \(Int(settings.lowThresholdPercent))%"
-                ))
-            }
+                // Low threshold crossing
+                if prevFraction > threshold && currFraction <= threshold && currFraction > 0 {
+                    notifications.append(QuotaNotification(
+                        email: curr.email,
+                        pool: currPool.displayName,
+                        kind: .lowThreshold,
+                        message: "\(curr.email): \(currPool.displayName) below \(Int(settings.lowThresholdPercent))%"
+                    ))
+                }
 
-            // Reset detection (was exhausted, now has headroom)
-            if prevFraction <= 0.0 && currFraction > 0.5 {
-                notifications.append(QuotaNotification(
-                    email: curr.email,
-                    pool: poolName,
-                    kind: .reset,
-                    message: "\(curr.email): \(poolName) has reset"
-                ))
+                // Reset detection (was exhausted, now has headroom)
+                if prevFraction <= 0.0 && currFraction > 0.5 {
+                    notifications.append(QuotaNotification(
+                        email: curr.email,
+                        pool: currPool.displayName,
+                        kind: .reset,
+                        message: "\(curr.email): \(currPool.displayName) has reset"
+                    ))
+                }
             }
         }
 

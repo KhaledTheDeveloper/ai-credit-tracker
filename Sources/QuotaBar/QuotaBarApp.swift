@@ -59,5 +59,12 @@ struct QuotaBarApp: App {
             Image(systemName: "bolt.circle")
         }
         .menuBarExtraStyle(.window)
+        .onChange(of: settingsStore.settings) { newSettings in
+            fetcher.settings = newSettings
+        }
+    }
+
+    init() {
+        NotificationService.requestPermission()
     }
 }

@@ -17,6 +17,12 @@ public final class UsageFetcher: ObservableObject {
     private let maxJitterSeconds: Double
     private var pollTimer: Timer?
 
+    /// Retained so we can compare old vs new for threshold notifications
+    private var previousUsages: [AccountUsage] = []
+
+    /// Settings accessor — set by the app after init
+    public var settings: AppSettings = AppSettings()
+
     public init(
         engine: EngineBridge,
         cache: UsageCache,
@@ -78,6 +84,20 @@ public final class UsageFetcher: ObservableObject {
         do {
             let fresh = try await engine.fetchAll()
             try? cache.save(fresh)
+
+            // Check for threshold crossings and send notifications
+            if !previousUsages.isEmpty {
+                let alerts = NotificationService.checkThresholds(
+                    previous: previousUsages,
+                    current: fresh,
+                    settings: settings
+                )
+                for alert in alerts {
+                    NotificationService.send(alert)
+                }
+            }
+
+            previousUsages = fresh
             usages = fresh
         } catch {
             lastError = error.localizedDescription
