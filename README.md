@@ -2,7 +2,7 @@
 
 > Track your Google AI Pro credits across multiple accounts from your macOS menu bar.
 >
-> *Never run out of AI credits again.*
+> *Never run out of AI credits unexpectedly — get notified before they hit zero.*
 
 <!-- Badges -->
 [![Download](https://img.shields.io/github/v/release/KhaledTheDeveloper/ai-credit-tracker?label=download&color=blue)](https://github.com/KhaledTheDeveloper/ai-credit-tracker/releases/latest)
@@ -22,6 +22,8 @@ AI Credit Tracker is a **native macOS menu bar app** that monitors your Google A
 
 <p align="center">
   <img src="assets/menu-bar-overview.png" alt="AI Credit Tracker Menu Bar" width="280" />
+  &nbsp;&nbsp;
+  <img src="assets/account-card.png" alt="Individual Account Card" width="280" />
   &nbsp;&nbsp;
   <img src="assets/add-account.png" alt="Add Account Flow" width="280" />
   &nbsp;&nbsp;
@@ -45,7 +47,9 @@ AI Credit Tracker solves this by showing all your accounts at a glance, sorted b
 - 👥 **Multi-account support** — Track unlimited Google accounts simultaneously
 - 🏆 **Smart ranking** — Accounts are automatically sorted by available credits (most headroom first)
 - 🃏 **Compact accordion cards** — Expandable `#1`, `#2`, `#3` cards with quick-glance quota capsules
-- 🔔 **Notifications** — Get alerted when credits drop below your threshold or reset
+- 🟢 **Active account tracking** — Mark which account you're using in Antigravity; a green dot shows next to the email for at-a-glance status
+- 🔔 **Smart notifications** — Get alerted when credits drop below your threshold, when quotas reset, or when Claude 5-hour/weekly quota is fully exhausted
+- 🚀 **Launch at Login** — Automatically starts when you log in so you never miss a quota change
 - 🔒 **100% local & private** — Zero telemetry, zero analytics, zero third-party servers. See [SECURITY.md](SECURITY.md)
 - 🌐 **Cross-platform engine** — The Node.js engine works on macOS, Windows, and Linux (native UI is macOS-only for now)
 
