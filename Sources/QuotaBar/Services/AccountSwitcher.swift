@@ -53,6 +53,11 @@ public enum AccountSwitcher {
                 }
 
                 DispatchQueue.main.async {
+                    if success {
+                        // Copy email to clipboard for easy pasting into Antigravity sign-in
+                        NSPasteboard.general.clearContents()
+                        NSPasteboard.general.setString(email, forType: .string)
+                    }
                     completion(success, message)
                 }
             } catch {

@@ -29,6 +29,30 @@ struct AccountCardView: View {
         usage.pool(named: primaryPool)?.fiveHour?.remainingPercent
     }
 
+    private var isActiveInAntigravity: Bool {
+        let home = FileManager.default.homeDirectoryForCurrentUser
+        let jetskiPath = home.appendingPathComponent(".gemini/jetski-standalone-oauth-token")
+        guard let data = try? Data(contentsOf: jetskiPath),
+              let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
+              let idToken = json["id_token"] as? String else {
+            return false
+        }
+        // Decode JWT payload (second segment)
+        let parts = idToken.split(separator: ".")
+        guard parts.count >= 2 else { return false }
+        var base64 = String(parts[1])
+        // Pad for base64url
+        while base64.count % 4 != 0 { base64.append("=") }
+        base64 = base64.replacingOccurrences(of: "-", with: "+")
+                       .replacingOccurrences(of: "_", with: "/")
+        guard let payloadData = Data(base64Encoded: base64),
+              let payload = try? JSONSerialization.jsonObject(with: payloadData) as? [String: Any],
+              let email = payload["email"] as? String else {
+            return false
+        }
+        return email == usage.email
+    }
+
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
             // Header Row (Clickable Accordion Bar)
@@ -127,44 +151,57 @@ struct AccountCardView: View {
                     .padding(.top, 2)
 
                     // Switch Antigravity button
-                    Button {
-                        switchStatus = .switching
-                        AccountSwitcher.switchAccount(email: usage.email) { success, message in
-                            switchStatus = success ? .success : .failed(message)
-                            if success {
-                                DispatchQueue.main.asyncAfter(deadline: .now() + 3) {
-                                    switchStatus = .idle
-                                }
-                            }
-                        }
-                    } label: {
+                    if isActiveInAntigravity {
                         HStack(spacing: 6) {
-                            switch switchStatus {
-                            case .idle:
-                                Image(systemName: "arrow.triangle.2.circlepath")
-                                Text("Switch Antigravity to this account")
-                            case .switching:
-                                ProgressView()
-                                    .controlSize(.mini)
-                                Text("Switching…")
-                            case .success:
-                                Image(systemName: "checkmark.circle.fill")
-                                    .foregroundStyle(.green)
-                                Text("Switched!")
-                            case .failed(let msg):
-                                Image(systemName: "xmark.circle.fill")
-                                    .foregroundStyle(.red)
-                                Text(msg)
-                                    .lineLimit(1)
-                            }
+                            Image(systemName: "checkmark.seal.fill")
+                                .foregroundStyle(.green)
+                            Text("Active in Antigravity")
+                                .font(.caption.weight(.medium))
+                                .foregroundStyle(.green)
                         }
-                        .font(.caption)
                         .frame(maxWidth: .infinity)
                         .padding(.vertical, 6)
+                        .background(Color.green.opacity(0.1), in: RoundedRectangle(cornerRadius: 6))
+                    } else {
+                        Button {
+                            switchStatus = .switching
+                            AccountSwitcher.switchAccount(email: usage.email) { success, message in
+                                switchStatus = success ? .success : .failed(message)
+                                if success {
+                                    DispatchQueue.main.asyncAfter(deadline: .now() + 4) {
+                                        switchStatus = .idle
+                                    }
+                                }
+                            }
+                        } label: {
+                            HStack(spacing: 6) {
+                                switch switchStatus {
+                                case .idle:
+                                    Image(systemName: "arrow.triangle.2.circlepath")
+                                    Text("Switch Antigravity to this account")
+                                case .switching:
+                                    ProgressView()
+                                        .controlSize(.mini)
+                                    Text("Switching…")
+                                case .success:
+                                    Image(systemName: "checkmark.circle.fill")
+                                        .foregroundStyle(.green)
+                                    Text("Switched! Restart Antigravity to apply.")
+                                case .failed(let msg):
+                                    Image(systemName: "xmark.circle.fill")
+                                        .foregroundStyle(.red)
+                                    Text(msg)
+                                        .lineLimit(1)
+                                }
+                            }
+                            .font(.caption)
+                            .frame(maxWidth: .infinity)
+                            .padding(.vertical, 6)
+                        }
+                        .buttonStyle(.bordered)
+                        .controlSize(.small)
+                        .disabled(switchStatus == .switching)
                     }
-                    .buttonStyle(.bordered)
-                    .controlSize(.small)
-                    .disabled(switchStatus == .switching)
                 }
                 .padding(.horizontal, 12)
                 .padding(.vertical, 10)
