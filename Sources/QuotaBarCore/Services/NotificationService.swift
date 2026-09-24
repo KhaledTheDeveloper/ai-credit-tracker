@@ -5,6 +5,8 @@ import UserNotifications
 public enum NotificationKind: Equatable, Sendable {
     case lowThreshold
     case reset
+    case fiveHourExhausted
+    case weeklyExhausted
 }
 
 public struct QuotaNotification: Equatable, Sendable {
@@ -23,6 +25,8 @@ public struct QuotaNotification: Equatable, Sendable {
 
 public enum NotificationService {
 
+    private static let claudePoolName = "Claude and GPT models"
+
     public static func checkThresholds(
         previous: [AccountUsage],
         current: [AccountUsage],
@@ -37,11 +41,10 @@ public enum NotificationService {
             for currPool in curr.pools {
                 guard let prevPool = prev.pool(named: currPool.displayName) else { continue }
 
-                // Use 5-hour window fractions for comparison
+                // --- Configurable low threshold crossing (all pools) ---
                 let prevFraction = prevPool.fiveHour?.remainingFraction ?? 0
                 let currFraction = currPool.fiveHour?.remainingFraction ?? 0
 
-                // Low threshold crossing
                 if prevFraction > threshold && currFraction <= threshold && currFraction > 0 {
                     notifications.append(QuotaNotification(
                         email: curr.email,
@@ -51,7 +54,7 @@ public enum NotificationService {
                     ))
                 }
 
-                // Reset detection (was exhausted, now has headroom)
+                // --- Reset detection (was exhausted, now has headroom) ---
                 if prevFraction <= 0.0 && currFraction > 0.5 {
                     notifications.append(QuotaNotification(
                         email: curr.email,
@@ -60,6 +63,34 @@ public enum NotificationService {
                         message: "\(curr.email): \(currPool.displayName) has reset"
                     ))
                 }
+
+                // --- Claude-specific: 5-hour quota exhausted ---
+                if currPool.displayName == claudePoolName {
+                    let prev5h = prevPool.fiveHour?.remainingFraction ?? 0
+                    let curr5h = currPool.fiveHour?.remainingFraction ?? 0
+
+                    if prev5h > 0 && curr5h <= 0 {
+                        notifications.append(QuotaNotification(
+                            email: curr.email,
+                            pool: currPool.displayName,
+                            kind: .fiveHourExhausted,
+                            message: "⚠️ \(curr.email): Claude 5-hour quota exhausted! Resets in \(currPool.fiveHour?.formattedResetTime ?? "~5h")"
+                        ))
+                    }
+
+                    // --- Claude-specific: Weekly quota exhausted ---
+                    let prevWeekly = prevPool.weekly?.remainingFraction ?? 0
+                    let currWeekly = currPool.weekly?.remainingFraction ?? 0
+
+                    if prevWeekly > 0 && currWeekly <= 0 {
+                        notifications.append(QuotaNotification(
+                            email: curr.email,
+                            pool: currPool.displayName,
+                            kind: .weeklyExhausted,
+                            message: "🚨 \(curr.email): Claude weekly quota exhausted! Resets in \(currPool.weekly?.formattedResetTime ?? "~7d")"
+                        ))
+                    }
+                }
             }
         }
 
@@ -67,17 +98,17 @@ public enum NotificationService {
     }
 
     public static func requestPermission() {
-        UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound]) { _, _ in }
+        UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound, .badge]) { _, _ in }
     }
 
     public static func send(_ notification: QuotaNotification) {
         let content = UNMutableNotificationContent()
-        content.title = "QuotaBar"
+        content.title = "AI Credit Tracker"
         content.body = notification.message
         content.sound = .default
 
         let request = UNNotificationRequest(
-            identifier: "\(notification.email)-\(notification.kind)",
+            identifier: "\(notification.email)-\(notification.pool)-\(notification.kind)",
             content: content,
             trigger: nil
         )
