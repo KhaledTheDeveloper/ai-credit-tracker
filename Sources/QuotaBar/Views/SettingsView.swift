@@ -144,6 +144,9 @@ struct SettingsView: View {
 
                         Toggle("Launch at login", isOn: $store.settings.launchAtLogin)
                             .font(.subheadline)
+                            .onChange(of: store.settings.launchAtLogin) { newValue in
+                                LaunchAtLoginManager.setEnabled(newValue)
+                            }
                     }
                     .padding(.horizontal, 16)
                     .padding(.bottom, 16)
@@ -151,5 +154,9 @@ struct SettingsView: View {
             }
         }
         .frame(width: 380, height: 500)
+        .onAppear {
+            // Sync toggle state with actual system state
+            store.settings.launchAtLogin = LaunchAtLoginManager.isEnabled
+        }
     }
 }
