@@ -208,8 +208,9 @@ The engine (`node engine/index.js`) works on all platforms. The menu bar UI is m
 
 ### v1.0.2 — September 2026
 
-- 🔄 **One-click account switching** — When quota runs out, switch Antigravity's active session to another account directly from the menu bar with a single click
-- 🔑 **Full Antigravity OAuth scopes** — New logins now request the complete Antigravity scope set, so switched accounts work seamlessly with Antigravity IDE and CLI
+- 🟢 **Active account tracking** — Mark which account you're currently using in Antigravity; a green dot shows next to the email in the overview for at-a-glance status
+- 🔔 **Claude quota exhaustion alerts** — Automatic notifications when your Claude 5-hour or weekly quota hits 0%, with reset countdown
+- 🧹 **Code cleanup** — Removed non-functional token-swap code, streamlined the switching UX
 
 ### v1.0.1 — September 2026
 
