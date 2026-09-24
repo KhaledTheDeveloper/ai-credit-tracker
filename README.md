@@ -67,7 +67,7 @@ AI Credit Tracker solves this by showing all your accounts at a glance, sorted b
 The fastest way — downloads, installs, and removes the macOS quarantine flag in one command:
 
 ```bash
-curl -sL https://github.com/KhaledTheDeveloper/ai-credit-tracker/releases/latest/download/AI-Credit-Tracker-v1.0.0-macOS.zip -o /tmp/act.zip \
+curl -sL https://github.com/KhaledTheDeveloper/ai-credit-tracker/releases/latest/download/AI-Credit-Tracker-v1.0.1-macOS.zip -o /tmp/act.zip \
   && unzip -o /tmp/act.zip -d /Applications \
   && xattr -cr "/Applications/AI Credit Tracker.app" \
   && rm /tmp/act.zip \
@@ -201,6 +201,30 @@ Yes. Set the `ANTIGRAVITY_OAUTH_CLIENT_ID` and `ANTIGRAVITY_OAUTH_CLIENT_SECRET`
 
 **Q: Does this work on Windows or Linux?**
 The engine (`node engine/index.js`) works on all platforms. The menu bar UI is macOS-only for now. We're looking for contributors to build Windows and Linux UIs — see [CONTRIBUTING.md](CONTRIBUTING.md).
+
+---
+
+## Changelog
+
+### v1.0.1 — September 2026
+
+- 🔧 **Launch at Login now works** — Previously the toggle was cosmetic; now it actually registers the app with macOS Login Items using `SMAppService`
+- 🔔 **Notifications are live** — Low-quota alerts and reset notifications were never connected; now they fire as real macOS notifications when any pool drops below your configured threshold
+- 🔄 **Standalone token refresh** — The app no longer requires Antigravity or Gemini CLI to be open; expired OAuth tokens are refreshed automatically in the background
+- 💾 **Token persistence fix** — Refreshed tokens are now saved back to disk correctly, preventing repeated "offline" states after a cold boot
+- 🛡️ **Ad-hoc code signing** — Downloaded `.app` now shows the friendly "Not Opened" Gatekeeper warning instead of the harsh "is damaged" error; bypass via Privacy & Security → Open Anyway
+- 📥 **One-line terminal install** — New `curl` one-liner in README that downloads, installs, strips quarantine, and launches in one command
+- ✅ **CI fix** — GitHub Actions now runs on `macos-15` with Xcode 16 so all 57 tests pass in CI
+
+### v1.0.0 — September 2026
+
+- 🎉 Initial release
+- Real-time quota monitoring for Gemini Models and Claude & GPT Models
+- Multi-account support with smart ranking
+- Browser-based OAuth login (no CLI required)
+- Compact accordion cards with expandable quota details
+- Configurable poll interval, sort mode, and notification threshold
+- 100% local and private — zero telemetry
 
 ---
 
