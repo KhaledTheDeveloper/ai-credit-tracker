@@ -23,7 +23,7 @@ AI Credit Tracker is a **native macOS menu bar app** that monitors your Google A
 <p align="center">
   <img src="assets/menu-bar-overview.png" alt="AI Credit Tracker Menu Bar" width="280" />
   &nbsp;&nbsp;
-  <img src="assets/account-card.png" alt="Individual Account Card" width="280" />
+  <img src="assets/Indivisual Account Card.png" alt="Individual Account Card" width="280" />
   &nbsp;&nbsp;
   <img src="assets/add-account.png" alt="Add Account Flow" width="280" />
   &nbsp;&nbsp;
