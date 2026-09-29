@@ -10,6 +10,7 @@ struct AccountsView: View {
 
     @State private var isLoggingIn = false
     @State private var loginMessage: String?
+    @State private var accountPendingRemoval: String?
 
     private var visibleAccounts: [AccountUsage] {
         fetcher.usages.filter { !store.settings.hiddenAccounts.contains($0.email) }
@@ -102,7 +103,7 @@ struct AccountsView: View {
 
                                         // Remove Account Button
                                         Button {
-                                            removeAccount(usage.email)
+                                            accountPendingRemoval = usage.email
                                         } label: {
                                             Image(systemName: "trash")
                                                 .font(.system(size: 12))
@@ -179,10 +180,31 @@ struct AccountsView: View {
             }
         }
         .frame(width: 380, height: 500)
+        .alert(
+            "Remove account?",
+            isPresented: Binding(
+                get: { accountPendingRemoval != nil },
+                set: { if !$0 { accountPendingRemoval = nil } }
+            ),
+            presenting: accountPendingRemoval
+        ) { email in
+            Button("Cancel", role: .cancel) {
+                accountPendingRemoval = nil
+            }
+            Button("Remove", role: .destructive) {
+                accountPendingRemoval = nil
+                removeAccount(email)
+            }
+        } message: { email in
+            Text("Remove \(email) from QuotaBar? Credentials managed by Antigravity or other apps will not be deleted.")
+        }
     }
 
     private func removeAccount(_ email: String) {
-        AccountManager.removeAccount(email: email)
+        guard AccountManager.removeAccount(email: email) else {
+            loginMessage = "Could not remove \(email). Please try again."
+            return
+        }
         if !store.settings.hiddenAccounts.contains(email) {
             store.settings.hiddenAccounts.append(email)
         }

@@ -56,20 +56,34 @@ public enum AccountManager {
         }
     }
 
-    /// Removes stored credentials for an account from disk
-    public static func removeAccount(email: String) {
+    /// Removes only credentials created by QuotaBar. Credentials owned by
+    /// Antigravity or other account managers are intentionally left untouched.
+    @discardableResult
+    public static func removeAccount(email: String) -> Bool {
         let fm = FileManager.default
         let home = fm.homeDirectoryForCurrentUser
+        let accountsDirectory = home.appendingPathComponent("Library/Application Support/QuotaBar/accounts")
+        let accountDirectory = accountsDirectory.appendingPathComponent(email)
 
-        let pathsToCheck = [
-            home.appendingPathComponent("Library/Application Support/antigravity-usage/accounts/\(email)"),
-            home.appendingPathComponent("Library/Application Support/QuotaBar/accounts/\(email)")
-        ]
+        // Refuse malformed identifiers that could escape the accounts directory.
+        guard !email.isEmpty,
+              email != ".",
+              email != "..",
+              !email.contains("/"),
+              !email.contains("\\"),
+              accountDirectory.deletingLastPathComponent().standardizedFileURL == accountsDirectory.standardizedFileURL else {
+            return false
+        }
 
-        for dir in pathsToCheck {
-            if fm.fileExists(atPath: dir.path) {
-                try? fm.removeItem(at: dir)
-            }
+        guard fm.fileExists(atPath: accountDirectory.path) else {
+            return true
+        }
+
+        do {
+            try fm.removeItem(at: accountDirectory)
+            return true
+        } catch {
+            return false
         }
     }
 }

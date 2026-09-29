@@ -46,7 +46,7 @@ This project follows the [Contributor Covenant Code of Conduct](CODE_OF_CONDUCT.
 # Build the app
 swift build
 
-# Run all tests (57 tests across 12 suites)
+# Run all tests (61 tests across 12 suites)
 swift test
 
 # Run the engine directly to verify quota fetching

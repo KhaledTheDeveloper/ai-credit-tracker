@@ -69,6 +69,8 @@ public final class UsageFetcher: ObservableObject {
     }
 
     public func fetchAll(isManual: Bool = false) async {
+        guard !isFetching else { return }
+
         isFetching = true
         lastError = nil
         defer { isFetching = false }
@@ -83,13 +85,14 @@ public final class UsageFetcher: ObservableObject {
 
         do {
             let fresh = try await engine.fetchAll()
-            try? cache.save(fresh)
+            let merged = Self.mergingStaleUsages(fresh, with: usages)
+            try? cache.save(merged)
 
             // Check for threshold crossings and send notifications
             if !previousUsages.isEmpty {
                 let alerts = NotificationService.checkThresholds(
                     previous: previousUsages,
-                    current: fresh,
+                    current: merged,
                     settings: settings
                 )
                 for alert in alerts {
@@ -97,8 +100,8 @@ public final class UsageFetcher: ObservableObject {
                 }
             }
 
-            previousUsages = fresh
-            usages = fresh
+            previousUsages = merged
+            usages = merged
         } catch {
             lastError = error.localizedDescription
             // Fall back to cached data marked as stale
@@ -115,6 +118,27 @@ public final class UsageFetcher: ObservableObject {
                 email: usage.email,
                 pools: usage.pools,
                 fetchedAt: usage.fetchedAt,
+                isStale: true
+            )
+        }
+    }
+
+    private static func mergingStaleUsages(
+        _ incoming: [AccountUsage],
+        with existing: [AccountUsage]
+    ) -> [AccountUsage] {
+        incoming.map { usage in
+            guard usage.isStale,
+                  usage.pools.isEmpty,
+                  let cached = existing.first(where: { $0.email == usage.email }),
+                  !cached.pools.isEmpty else {
+                return usage
+            }
+
+            return AccountUsage(
+                email: usage.email,
+                pools: cached.pools,
+                fetchedAt: cached.fetchedAt,
                 isStale: true
             )
         }

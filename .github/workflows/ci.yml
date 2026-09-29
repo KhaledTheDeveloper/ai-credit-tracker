@@ -23,6 +23,9 @@ jobs:
       - name: Verify Node.js engine syntax
         run: node -c engine/index.js
 
+      - name: Run Node.js engine tests
+        run: node --test engine/index.test.js
+
       - name: Build
         run: swift build
 

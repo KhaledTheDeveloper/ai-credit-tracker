@@ -34,10 +34,10 @@ Use of these names in this project does not imply any affiliation with, endorsem
 
 AI Credit Tracker is designed to be a responsible API consumer:
 
-- **Default polling interval**: 15 minutes (configurable, minimum enforced)
-- **Exponential backoff**: On errors, the polling interval automatically doubles (up to 3 retries)
+- **Default polling interval**: 5 minutes (configurable down to 1 minute)
+- **Endpoint fallback**: If the primary quota endpoint fails, the engine tries Google's fallback endpoint
 - **Random jitter**: 0–3 seconds of random delay added to each poll to avoid thundering herd
-- **Read-only**: This tool only reads quota information. It never creates, modifies, or deletes any data.
+- **Read-only Google access**: This tool reads quota information and never creates, modifies, or deletes Google account data.
 
 ## Limitation of Liability
 

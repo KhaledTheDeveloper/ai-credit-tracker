@@ -78,4 +78,25 @@ import Testing
 
         #expect(notifications.isEmpty)
     }
+
+    @Test func staleUsageDoesNotTriggerNotifications() {
+        let settings = AppSettings(lowThresholdPercent: 10.0)
+        let previous = AccountUsage.sample(
+            email: "a@g.com",
+            geminiRemaining: 1.0,
+            claudeRemaining: 0.5
+        )
+        let stale = AccountUsage(
+            email: previous.email,
+            pools: previous.pools,
+            fetchedAt: previous.fetchedAt,
+            isStale: true
+        )
+
+        let notifications = NotificationService.checkThresholds(
+            previous: [previous], current: [stale], settings: settings
+        )
+
+        #expect(notifications.isEmpty)
+    }
 }

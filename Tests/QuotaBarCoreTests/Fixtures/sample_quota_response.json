@@ -5,7 +5,7 @@
       {
         "displayName": "Gemini Models",
         "buckets": [
-          {"window": "weekly", "remainingFraction": 1.0, "resetTime": "2026-09-23T11:45:00Z"},
+          {"window": "weekly", "remainingFraction": 1.0, "resetTime": "2026-09-23T11:45:00.123Z"},
           {"window": "5h", "remainingFraction": 1.0, "resetTime": "2026-09-16T16:30:00Z"}
         ]
       },
@@ -17,7 +17,7 @@
         ]
       }
     ],
-    "fetchedAt": "2026-09-16T12:00:00Z",
+    "fetchedAt": "2026-09-16T12:00:00.820Z",
     "isStale": false
   },
   {

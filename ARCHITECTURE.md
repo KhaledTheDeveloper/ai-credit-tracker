@@ -173,7 +173,7 @@ To build a UI for Windows or Linux:
    - Per-pool quota bars (remaining %) with color coding
    - Countdown timers to reset (computed from `resetTime`)
    - "Weekly supersedes 5h" indicator when weekly hits 0%
-4. **Poll** by re-running the engine on a configurable interval (default: 15 minutes).
+4. **Poll** by re-running the engine on a configurable interval (default: 5 minutes).
 5. **Add account** by writing a `tokens.json` to the platform-appropriate directory.
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) for recommended tech stacks and how to get started.

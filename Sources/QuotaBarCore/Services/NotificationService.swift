@@ -36,6 +36,7 @@ public enum NotificationService {
         let threshold = settings.lowThresholdPercent / 100.0
 
         for curr in current {
+            guard !curr.isStale else { continue }
             guard let prev = previous.first(where: { $0.email == curr.email }) else { continue }
 
             for currPool in curr.pools {

@@ -3,17 +3,30 @@ import SwiftUI
 import QuotaBarCore
 
 @main
+@MainActor
 struct QuotaBarApp: App {
-    @StateObject private var fetcher: UsageFetcher = {
+    @StateObject private var fetcher: UsageFetcher
+    @StateObject private var settingsStore: SettingsStore
+
+    init() {
+        let settingsStore = SettingsStore()
         let appSupport = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask).first!
         let quotaBarDir = appSupport.appendingPathComponent("QuotaBar")
         let enginePath = Self.resolveEngineScript(appSupportDir: quotaBarDir)
         let engine = EngineBridge(enginePath: enginePath)
         let cache = UsageCache(directory: quotaBarDir.appendingPathComponent("cache"))
-        let fetcher = UsageFetcher(engine: engine, cache: cache)
+        let fetcher = UsageFetcher(
+            engine: engine,
+            cache: cache,
+            pollInterval: TimeInterval(settingsStore.settings.pollIntervalSeconds)
+        )
+        fetcher.settings = settingsStore.settings
         fetcher.startPolling()
-        return fetcher
-    }()
+
+        _settingsStore = StateObject(wrappedValue: settingsStore)
+        _fetcher = StateObject(wrappedValue: fetcher)
+        NotificationService.requestPermission()
+    }
 
     private static func resolveEngineScript(appSupportDir: URL) -> String {
         let fm = FileManager.default
@@ -50,8 +63,6 @@ struct QuotaBarApp: App {
         return targetEngineScript.path
     }
 
-    @StateObject private var settingsStore = SettingsStore()
-
     var body: some Scene {
         MenuBarExtra {
             MenuBarContentView(fetcher: fetcher, settingsStore: settingsStore)
@@ -61,10 +72,10 @@ struct QuotaBarApp: App {
         .menuBarExtraStyle(.window)
         .onChange(of: settingsStore.settings) { newSettings in
             fetcher.settings = newSettings
+            let newInterval = TimeInterval(newSettings.pollIntervalSeconds)
+            if fetcher.pollInterval != newInterval {
+                fetcher.updatePollInterval(newInterval)
+            }
         }
-    }
-
-    init() {
-        NotificationService.requestPermission()
     }
 }

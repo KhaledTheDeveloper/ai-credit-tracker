@@ -26,6 +26,30 @@ import Testing
         #expect(usages.isEmpty)
     }
 
+    @Test func parsesISO8601DatesWithFractionalSeconds() throws {
+        let data = """
+        [{
+          "email": "fractional@example.com",
+          "pools": [{
+            "displayName": "Gemini Models",
+            "buckets": [{
+              "window": "weekly",
+              "remainingFraction": 0.75,
+              "resetTime": "2026-09-23T11:45:00.123Z"
+            }]
+          }],
+          "fetchedAt": "2026-09-16T12:00:00.820Z",
+          "isStale": false
+        }]
+        """.data(using: .utf8)!
+
+        let usages = try EngineBridge.parseQuotaJSON(data)
+
+        #expect(usages.count == 1)
+        #expect(usages[0].email == "fractional@example.com")
+        #expect(usages[0].pools[0].weekly != nil)
+    }
+
     @Test func throwsOnMalformedJSON() {
         let data = "not json".data(using: .utf8)!
         #expect(throws: EngineBridgeError.invalidJSON) {
@@ -45,6 +69,22 @@ import Testing
     @Test func fetchAllThrowsWhenEngineNotFound() async {
         let bridge = EngineBridge(enginePath: "/nonexistent/path/to/engine.js")
         await #expect(throws: EngineBridgeError.engineNotFound(path: "/nonexistent/path/to/engine.js")) {
+            try await bridge.fetchAll()
+        }
+    }
+
+    @Test func fetchAllTerminatesEngineAfterTimeout() async throws {
+        let tempDirectory = FileManager.default.temporaryDirectory
+            .appendingPathComponent("EngineBridgeTimeoutTests-\(UUID().uuidString)")
+        try FileManager.default.createDirectory(at: tempDirectory, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: tempDirectory) }
+
+        let script = tempDirectory.appendingPathComponent("hanging_engine.js")
+        try "setInterval(() => {}, 1000);"
+            .write(to: script, atomically: true, encoding: .utf8)
+
+        let bridge = EngineBridge(enginePath: script.path, timeoutSeconds: 1)
+        await #expect(throws: EngineBridgeError.engineTimedOut(seconds: 1)) {
             try await bridge.fetchAll()
         }
     }

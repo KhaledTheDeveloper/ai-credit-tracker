@@ -155,7 +155,7 @@ Click **"Settings…"** in the menu bar footer to configure:
 
 | Setting | Default | Description |
 |---------|---------|-------------|
-| Refresh Interval | 15 minutes | How often to poll for updated quotas |
+| Refresh Interval | 5 minutes | How often to poll for updated quotas |
 | Primary Pool | Claude and GPT models | Which pool drives ranking and notifications |
 | Sort Order | Soonest Reset | How accounts are ranked (`Soonest Reset`, `Most Remaining`, `Alphabetical`) |
 | Alert Threshold | 10% | Notify when credits drop below this percentage |
@@ -183,7 +183,7 @@ See [ARCHITECTURE.md](ARCHITECTURE.md) for the engine JSON contract and integrat
 - **Zero telemetry** — No data is ever sent to any server besides Google's own API endpoints.
 - **Zero analytics** — No tracking, no metrics collection, no crash reporting.
 - **Local-only storage** — Credentials are stored in your OS-protected user directories.
-- **Read-only** — This tool only *reads* quota information. It never modifies anything.
+- **Read-only Google access** — This tool reads quota information and never modifies your Google account data.
 
 See [SECURITY.md](SECURITY.md) for the full security model and vulnerability disclosure policy.
 

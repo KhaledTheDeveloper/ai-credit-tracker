@@ -20,8 +20,8 @@ struct AccountCardView: View {
         usage.pool(named: primaryPool)?.weekly?.remainingPercent
     }
 
-    private var primary5hRemaining: Double? {
-        usage.pool(named: primaryPool)?.fiveHour?.remainingPercent
+    private var primaryPoolLabel: String {
+        primaryPool.hasPrefix("Gemini") ? "Gemini:" : "Claude:"
     }
 
     private var isActive: Bool {
@@ -64,7 +64,7 @@ struct AccountCardView: View {
                     // Quick Quota Pill (Shown when collapsed)
                     if let weekly = primaryWeeklyRemaining {
                         HStack(spacing: 4) {
-                            Text("Claude:")
+                            Text(primaryPoolLabel)
                                 .font(.system(size: 10, weight: .medium))
                                 .foregroundStyle(.secondary)
                             Text("\(Int(weekly))%")

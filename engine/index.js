@@ -264,6 +264,31 @@ function loadAccounts() {
   return Array.from(accounts.values());
 }
 
+function persistRefreshedAccessToken(account, accessToken) {
+  if (!account.tokenPath || !fs.existsSync(account.tokenPath)) return;
+
+  try {
+    const stored = JSON.parse(fs.readFileSync(account.tokenPath, 'utf8'));
+    if (stored[account.email] && typeof stored[account.email] === 'object') {
+      // Flat tokens.json format: { "email@gmail.com": { access_token: ... } }
+      stored[account.email].access_token = accessToken;
+      stored[account.email].accessToken = accessToken;
+    } else if (stored.token && typeof stored.token === 'object') {
+      // Local Antigravity format: { token: { access_token: ... } }
+      stored.token.access_token = accessToken;
+      stored.token.accessToken = accessToken;
+    } else {
+      // Per-account format, including refresh-token-only files.
+      stored.accessToken = accessToken;
+      stored.access_token = accessToken;
+      stored.expiresAt = Date.now() + 3600 * 1000;
+    }
+    fs.writeFileSync(account.tokenPath, JSON.stringify(stored, null, 2));
+  } catch (e) {
+    // A failed persistence attempt should not discard successfully fetched quota.
+  }
+}
+
 function renderSuccessHtml(email) {
   return `<!DOCTYPE html>
 <html lang="en">
@@ -510,7 +535,10 @@ async function handleLogin() {
           const primaryDir = quotaBarDirs[0];
           const accDir = path.join(primaryDir, 'accounts', email);
           if (!fs.existsSync(accDir)) {
-            fs.mkdirSync(accDir, { recursive: true });
+            fs.mkdirSync(accDir, { recursive: true, mode: 0o700 });
+          }
+          if (process.platform !== 'win32') {
+            fs.chmodSync(accDir, 0o700);
           }
           const tokenFile = path.join(accDir, 'tokens.json');
           fs.writeFileSync(tokenFile, JSON.stringify({
@@ -518,7 +546,10 @@ async function handleLogin() {
             accessToken: tokenRes.access_token,
             refreshToken: tokenRes.refresh_token || '',
             expiresAt: Date.now() + (tokenRes.expires_in || 3600) * 1000
-          }, null, 2), 'utf8');
+          }, null, 2), { encoding: 'utf8', mode: 0o600 });
+          if (process.platform !== 'win32') {
+            fs.chmodSync(tokenFile, 0o600);
+          }
 
           res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
           res.end(renderSuccessHtml(email));
@@ -610,6 +641,7 @@ async function main() {
         if (freshToken) {
           token = freshToken;
           acc.accessToken = freshToken;
+          persistRefreshedAccessToken(acc, freshToken);
         }
       }
     }
@@ -628,24 +660,7 @@ async function main() {
           acc.accessToken = freshToken;
           try {
             data = await fetchQuotaForToken(freshToken);
-            // Persist fresh token back to tokens file
-            if (acc.tokenPath && fs.existsSync(acc.tokenPath)) {
-              try {
-                const stored = JSON.parse(fs.readFileSync(acc.tokenPath, 'utf8'));
-                if (stored[acc.email]) {
-                  // Flat tokens.json format: { "email@gmail.com": { access_token: ... } }
-                  stored[acc.email].access_token = freshToken;
-                  stored[acc.email].accessToken = freshToken;
-                  fs.writeFileSync(acc.tokenPath, JSON.stringify(stored, null, 2));
-                } else if (stored.accessToken !== undefined || stored.access_token !== undefined) {
-                  // Per-account tokens.json format: { accessToken: ..., refreshToken: ... }
-                  stored.accessToken = freshToken;
-                  stored.access_token = freshToken;
-                  stored.expiresAt = Date.now() + 3600 * 1000;
-                  fs.writeFileSync(acc.tokenPath, JSON.stringify(stored, null, 2));
-                }
-              } catch (e) {}
-            }
+            persistRefreshedAccessToken(acc, freshToken);
           } catch (retryErr) {
             data = null;
           }
@@ -682,7 +697,14 @@ async function main() {
   console.log(JSON.stringify(results, null, 2));
 }
 
-main().catch(err => {
-  console.error('Fatal engine error:', err);
-  process.exit(1);
-});
+if (require.main === module) {
+  main().catch(err => {
+    console.error('Fatal engine error:', err);
+    process.exit(1);
+  });
+}
+
+module.exports = {
+  decodeJwtPayload,
+  persistRefreshedAccessToken
+};

@@ -129,4 +129,39 @@ import Testing
         #expect(saved.count == 1)
         #expect(saved.first?.email == "fresh@example.com")
     }
+
+    @Test @MainActor func staleAccountRetainsLastKnownQuotaPools() async throws {
+        let cache = UsageCache(directory: tempDir)
+        let cached = AccountUsage.sample(
+            email: "offline@example.com",
+            geminiRemaining: 0.8,
+            claudeRemaining: 0.4
+        )
+        try cache.save([cached])
+
+        let mockScript = tempDir.appendingPathComponent("stale_engine.js")
+        let jsonOutput = """
+        console.log(JSON.stringify([{
+            email: "offline@example.com",
+            pools: [],
+            fetchedAt: "2026-09-16T12:00:00.123Z",
+            isStale: true
+        }]));
+        """
+        try jsonOutput.write(to: mockScript, atomically: true, encoding: .utf8)
+
+        let engine = EngineBridge(enginePath: mockScript.path)
+        let fetcher = UsageFetcher(engine: engine, cache: cache, pollInterval: 300, maxJitterSeconds: 0)
+
+        await fetcher.fetchAll(isManual: true)
+
+        let usage = try #require(fetcher.usages.first)
+        #expect(usage.isStale)
+        #expect(usage.pools.count == 2)
+        #expect(usage.pool(named: "Claude and GPT models")?.weekly?.remainingFraction == 0.4)
+
+        let saved = try cache.load()
+        #expect(saved.first?.pools.count == 2)
+        #expect(saved.first?.isStale == true)
+    }
 }
