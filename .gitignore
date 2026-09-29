@@ -9,3 +9,10 @@ DerivedData/
 Config/local.json
 node_modules/
 dist/
+
+# Local Antigravity tooling (not part of the project source)
+.agents/
+skills-lock.json
+
+# Generated brag/launch video output
+brag-output/
